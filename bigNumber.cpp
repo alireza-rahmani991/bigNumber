@@ -235,6 +235,7 @@ bigNumber operator -(const bigNumber& number1, const  bigNumber& number2){
 }
 
 void bigNumber::shiftLeft(){
+    //yek araye jadid be tool yeki bishtar sakhte mishe ke onsor avalesh 0 hast
     int* newNum = new int[len + 1];
     newNum[0] = 0;
     for(int i = 0; i < len; i++){
@@ -246,11 +247,12 @@ void bigNumber::shiftLeft(){
 }
 
 void bigNumber::shiftRight(){
-    if(len <= 1){
+    if(len <= 1){     //age add 1 raghami bashe tabdil be 0 mishe
         num[0] = 0;
         len = 1;
         return;
     }
+    //yek araye jadid sakhte shode bedone onsor aval be be jaye arraye feli gozashte mishe
     int* newNum = new int[len - 1];
     for(int i = 1; i < len; i++){
         newNum[i - 1] = num[i];
