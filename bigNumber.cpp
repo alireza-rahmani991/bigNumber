@@ -20,7 +20,9 @@ public:
     bigNumber(int* number, int len, bool sign);
     bigNumber(const bigNumber& number);
     ~bigNumber();
-    void printNum();
+    void shiftLeft();
+    void shiftRight();
+    friend ostream& operator<<(ostream& output, const bigNumber& number);
     friend bool isBigger(const bigNumber& number1, const  bigNumber& number2);
     friend bigNumber operator+(const bigNumber& number1, const  bigNumber& number2);
     friend bigNumber operator-(const bigNumber& number1, const  bigNumber& number2);
@@ -64,13 +66,19 @@ bigNumber::bigNumber(int number){
 }
 
 bigNumber::bigNumber(int* number, int len, bool sign){
+    for (int i = 0; i < len; i++) {
+        if (number[i] < 0 || number[i] > 9) {
+            throw std::invalid_argument("Invalid input: array contains non-digit values.");
+        }
+    }
+
     this->len = len;
     this->sign = sign;
     num = new int[len];
     for(int i = 0; i < len; i++){
         num[i] = number[i];
     }
-    // delete [] number;
+
 }
 
 
@@ -101,14 +109,21 @@ bigNumber::~bigNumber(){
     delete[] num;
 }
 
-void bigNumber::printNum(){
-    !sign ? cout<<"" : cout<<"-";
-    for(int i = len - 1; i >= 0; i--){
-        cout<<num[i];
+ostream& operator<< (ostream& output, const bigNumber& number){
+    if(number.len == 1 && number.num[0] == 0){
+        output<<0;
+        return output;
     }
-    cout<<endl;
+    !number.sign ? output<<"" : output<<"-";
+    for(int i = number.len - 1; i >= 0; i--){
+        output<<number.num[i];
+    }
+    output<<endl;
+
+    return output;
     
 }
+
 
 bool isBigger(const bigNumber& number1, const  bigNumber& number2){
     if(number1.len != number2.len){
@@ -123,6 +138,7 @@ bool isBigger(const bigNumber& number1, const  bigNumber& number2){
     }
     return false;
 }
+
 
 bigNumber operator +(const bigNumber& number1, const  bigNumber& number2){
     
@@ -162,6 +178,9 @@ bigNumber operator +(const bigNumber& number1, const  bigNumber& number2){
         
     }
 }
+
+
+
 
 bigNumber operator -(const bigNumber& number1, const  bigNumber& number2){
     if(number1.sign == number2.sign){
@@ -215,15 +234,38 @@ bigNumber operator -(const bigNumber& number1, const  bigNumber& number2){
     }
 }
 
+void bigNumber::shiftLeft(){
+    int* newNum = new int[len + 1];
+    newNum[0] = 0;
+    for(int i = 0; i < len; i++){
+        newNum[i + 1] = num[i];
+    }
+    len++;
+    delete [] num;
+    num = newNum;
+}
+
+void bigNumber::shiftRight(){
+    if(len <= 1){
+        num[0] = 0;
+        len = 1;
+        return;
+    }
+    int* newNum = new int[len - 1];
+    for(int i = 1; i < len; i++){
+        newNum[i - 1] = num[i];
+    }
+    len--;
+    delete [] num;
+    num = newNum;
+}
 
 
 int main(){
     bigNumber num(-100);
-    bigNumber num2("50");
-    bigNumber num3 = num + num2;
+    bigNumber num2("160");
+    bigNumber num3 = num - num2;
     
-    num.printNum();
-    num2.printNum();
-    num3.printNum();
-    // num2.printNum();
+    
+    cout<<num<<num2<<num3;
 }
