@@ -143,11 +143,13 @@ bool isBigger(const bigNumber& number1, const  bigNumber& number2){
 bigNumber operator +(const bigNumber& number1, const  bigNumber& number2){
     
 
-    int maxLen = number1.len > number2.len ? number1.len : number2.len;
-
-    int* sumRes = new int[maxLen + 1];
-    int carry = 0;
+    
     if(number1.sign == number2.sign){
+        int maxLen = number1.len > number2.len ? number1.len : number2.len;
+
+        int* sumRes = new int[maxLen + 1];
+        int carry = 0;
+
         for(int i = 0; i < maxLen ; i++){
 
             int digit1 = (i < number1.len) ? number1.num[i] : 0;
@@ -167,10 +169,14 @@ bigNumber operator +(const bigNumber& number1, const  bigNumber& number2){
 
         if(carry == 1){
             sumRes[maxLen] = 1;
-            return bigNumber(sumRes, maxLen + 1, number1.sign);
+            bigNumber result(sumRes, maxLen + 1, number1.sign);
+            delete[] sumRes;
+            return result;
         }
         else{
-            return bigNumber(sumRes, maxLen, number1.sign);
+            bigNumber result(sumRes, maxLen, number1.sign);
+            delete[] sumRes;
+            return result;
         }
     }
     else{   //age alamat adad motavafet bashad az hamdige kam mikonim
@@ -224,8 +230,9 @@ bigNumber operator -(const bigNumber& number1, const  bigNumber& number2){
     while(resultLen > 1 && subtractionRes[resultLen - 1] == 0) {
         resultLen--;
     }
-
-    return bigNumber(subtractionRes, resultLen, resSign);
+    bigNumber result (subtractionRes, resultLen, resSign);
+    delete[] subtractionRes;
+    return result;
     }
 
     
@@ -264,8 +271,8 @@ void bigNumber::shiftRight(){
 
 
 int main(){
-    bigNumber num(-100);
-    bigNumber num2("160");
+    bigNumber num(-250);
+    bigNumber num2("-160");
     bigNumber num3 = num - num2;
     
     
