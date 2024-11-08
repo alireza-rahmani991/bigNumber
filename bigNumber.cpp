@@ -28,7 +28,7 @@ public:
     friend bool operator==(const bigNumber& number1, const bigNumber& number2);
     friend bigNumber operator+(const bigNumber& number1, const  bigNumber& number2);
     friend bigNumber operator-(const bigNumber& number1, const  bigNumber& number2);
-    friend bigNumber operator /(const bigNumber& numerator, const bigNumber& divisor);
+    friend bigNumber operator /(const bigNumber& dividend, const bigNumber& divisor);
     friend bigNumber operator*(const bigNumber& number1, const bigNumber& number2 );
     bigNumber karatsubaMultiply(const bigNumber& number2);
     void splitAt(int m, bigNumber& low, bigNumber& high) const;
@@ -411,6 +411,70 @@ bigNumber operator *(const bigNumber& number1, const  bigNumber& number2){ //anj
     
 }
 
+
+bigNumber operator/(const bigNumber& dividend, const bigNumber& divisor){
+    bool resSign = dividend.sign == divisor.sign ? false: true;
+    if(divisor.len == 1 && divisor.num[0] == 0){
+        throw std::invalid_argument("division by zero");
+    }
+
+    if(divisor.len == 1 && divisor.num[0] == 1){
+        return dividend;
+    }
+
+    if(isBigger(divisor, dividend)){
+        return bigNumber();
+    }
+
+    bigNumber remainder;
+    bigNumber result;
+
+
+    bigNumber newDivisor = divisor.sign ? bigNumber(divisor.num, divisor.len, false): divisor;
+
+    
+    remainder.len = 0;
+    remainder.num = new int[dividend.len] {0};
+
+    
+    int* quotientDigits = new int[dividend.len];
+
+    for (int i = dividend.len - 1; i >= 0; --i) {
+        
+        remainder.shiftLeft();
+        remainder.num[0] = dividend.num[i];
+
+        
+        int q = 0;
+        while (isBigger(remainder, newDivisor) || remainder == newDivisor) {
+            remainder = remainder - newDivisor;
+            ++q;
+        }
+
+        
+        quotientDigits[i] = q;
+    }
+
+
+    int resultLen = dividend.len;
+    while (resultLen > 1 && quotientDigits[resultLen - 1] == 0) {
+        --resultLen;
+    }
+
+    
+    result.num = new int[resultLen];
+    for (int i = 0; i < resultLen; i++) {
+        result.num[i] = quotientDigits[i];
+    }
+    result.len = resultLen;
+    result.sign = resSign;
+
+    delete[] quotientDigits;
+    return result;
+}
+
+
+
 bigNumber bigNumber::factoriel(int n){
     bigNumber res(1);
     for(int i = 1; i <= n; i++){
@@ -421,14 +485,41 @@ bigNumber bigNumber::factoriel(int n){
 
 
 bigNumber bigNumber::pow(int n){
+    if(n == 0){
+        return bigNumber(1);
+    }
+    if(n == 1){
+        return *this;
+    }
 
+    
+    
+    bigNumber half = this->pow(n / 2);
+    half = half.karatsubaMultiply(half);
+
+    if(n % 2 == 1){
+        half = half.karatsubaMultiply(*this);
+    }
+
+    if(this->sign && n % 2 == 1){
+        half = half * -1;
+    }
+
+    return half;
 }
 
 int main(){
-    bigNumber num(-990);
-    bigNumber num2("0");
-    bigNumber num3 = num.karatsubaMultiply(num2);
-    // bigNumber num4 = bigNumber::factoriel(10);
+    bigNumber num(32412);
+    bigNumber num2("-165");
+    bigNumber num3 = num / num2;
     
-    cout<<num<<num2<<num3;
+    bigNumber num4 = bigNumber::factoriel(20);
+
+    bigNumber num5 = num * num2;
+    bigNumber num6 = num.karatsubaMultiply(num2);
+
+    bigNumber num7(-75);
+    bigNumber num8 = num7.pow(11);
+
+    cout<<num<<num2<<num3<<"factoriel of 20: "<<num4<<"multiplication of nums: "<<num5<<"kartasuba: "<<num6<<"pow: "<<num8;
 }
