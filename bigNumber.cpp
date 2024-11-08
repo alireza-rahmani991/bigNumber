@@ -24,14 +24,21 @@ public:
     void shiftRight();
     friend ostream& operator<<(ostream& output, const bigNumber& number);
     friend bool isBigger(const bigNumber& number1, const  bigNumber& number2);
+    bigNumber& operator=(const bigNumber& number2);
+    friend bool operator==(const bigNumber& number1, const bigNumber& number2);
     friend bigNumber operator+(const bigNumber& number1, const  bigNumber& number2);
     friend bigNumber operator-(const bigNumber& number1, const  bigNumber& number2);
+    friend bigNumber operator /(const bigNumber& numerator, const bigNumber& divisor);
+    friend bigNumber operator*(const bigNumber& number1, const bigNumber& number2 );
+    bigNumber karatsubaMultiply(const bigNumber& number2);
+    void splitAt(int m, bigNumber& low, bigNumber& high) const;
+    static bigNumber factoriel(int n);
 
 };
 
 bigNumber::bigNumber()
 {
-    sign = true;
+    sign = false;
     len = 1;
     num = new int[len];
     num[0] = 0;
@@ -111,7 +118,7 @@ bigNumber::~bigNumber(){
 
 ostream& operator<< (ostream& output, const bigNumber& number){
     if(number.len == 1 && number.num[0] == 0){
-        output<<0;
+        output<<0<<endl;
         return output;
     }
     !number.sign ? output<<"" : output<<"-";
@@ -186,6 +193,23 @@ bigNumber operator +(const bigNumber& number1, const  bigNumber& number2){
 }
 
 
+bigNumber& bigNumber::operator=(const bigNumber& number2){
+    if(this == &number2){
+        return *this;
+    }
+
+    delete[] num;
+
+    len = number2.len;
+    sign = number2.sign;
+    num = new int[len];
+    
+    for(int i = 0; i <len ; i++){
+        num[i] = number2.num[i];
+    }
+
+    return *this;
+}
 
 
 bigNumber operator -(const bigNumber& number1, const  bigNumber& number2){
@@ -269,12 +293,137 @@ void bigNumber::shiftRight(){
     num = newNum;
 }
 
+bool operator==(const bigNumber& number1, const bigNumber& number2) {
+    
+    if (number1.sign != number2.sign) {
+        return false;
+    }
+
+    
+    if (number1.len != number2.len) {
+        return false;
+    }
+
+    
+    for (int i = 0; i < number1.len; i++) {
+        if (number1.num[i] != number2.num[i]) {
+            return false;
+        }
+    }
+
+    
+    return true;
+}
+
+void bigNumber::splitAt(int m, bigNumber& low, bigNumber& high) const {
+
+    low.len = m;
+    low.num = new int[low.len];
+    for (int i = 0; i < m; ++i) {
+        low.num[i] = num[i];
+    }
+
+    
+    high.len = len - m;
+    high.num = new int[high.len];
+    for (int i = 0; i < high.len; ++i) {
+        high.num[i] = num[m + i];
+    }
+}
+
+
+bigNumber bigNumber::karatsubaMultiply(const bigNumber& number2){ //anjam zarb be ravesh karatsuba
+    bool resSign = sign == number2.sign ? false: true;
+    //check kardan halat haye sade
+    if((len == 1 && num[0] == 0) || (number2.len == 1 && number2.num[0] == 0)){
+        return bigNumber();
+    }
+    if(len == 1 && num[0] == 1){
+        return bigNumber(number2.num, number2.len, resSign);
+    }
+    if(number2.len == 1 && number2.num[0] == 1){
+        return bigNumber(num, len, resSign);
+    }
+    
+    if(len == 1 || number2.len == 1){
+        return *this * number2;
+    }
+
+    int m = len > number2.len ? number2.len / 2 : len / 2;
+    
+    bigNumber X0, X1, Y0, Y1;
+
+    this->splitAt(m, X0, X1);
+    number2.splitAt(m, Y0, Y1);
+
+    bigNumber P1 = X0.karatsubaMultiply(Y0);
+    bigNumber P2 = X1.karatsubaMultiply(Y1);
+    bigNumber P3 = (X0 + X1).karatsubaMultiply(Y0 + Y1) - P1 - P2;
+
+    for(int i = 0; i < 2 * m; i++){
+        P2.shiftLeft();
+    }
+    for(int i = 0; i < m; i++){
+        P3.shiftLeft();
+    }
+
+    bigNumber res = P2 + P3 + P1;
+    return res;
+
+}
+
+bigNumber operator *(const bigNumber& number1, const  bigNumber& number2){ //anjam zarb be ravesh mamoli
+    bool resSign = number1.sign == number2.sign ? false: true;
+    if((number1.len == 1 && number1.num[0] == 0) || (number2.len == 1 && number2.num[0] == 0)){
+        return bigNumber();
+    }
+    if(number1.len == 1 && number1.num[0] == 1){
+        return bigNumber(number2.num, number2.len, resSign);
+    }
+    if(number2.len == 1 && number2.num[0] == 1){
+        return bigNumber(number1.num, number1.len, resSign);
+    }
+    
+    int* res = new int[number1.len + number2.len] {};
+
+
+
+    
+    for(int i = 0 ; i < number2.len; i++){
+        int carry = 0;
+        for(int j = 0; j < number1.len; j++){
+            int current = number1.num[j] * number2.num[i] + carry + res[i + j];
+            res[i + j] = current % 10;
+            carry = current / 10;
+        }
+        res[i + number1.len] += carry;
+    }
+
+    int resultLen = number1.len + number2.len;
+    while(resultLen > 1 && res[resultLen - 1] == 0) {
+        resultLen--;
+    }
+
+    bigNumber ans(res, resultLen, resSign);
+    delete [] res;
+    return ans;
+    
+}
+
+bigNumber bigNumber::factoriel(int n){
+    bigNumber res(1);
+    for(int i = 1; i <= n; i++){
+        res = res.karatsubaMultiply(i);
+    }
+    return res;
+}
+
 
 int main(){
-    bigNumber num(-250);
-    bigNumber num2("-160");
-    bigNumber num3 = num - num2;
+    bigNumber num(-990);
+    bigNumber num2("0");
+    bigNumber num3 = num.karatsubaMultiply(num2);
+    bigNumber num4 = bigNumber::factoriel(100);
     
-    
-    cout<<num<<num2<<num3;
+    cout<<num<<num2<<num3<<num4;
 }
