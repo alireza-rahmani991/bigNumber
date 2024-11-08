@@ -419,6 +419,9 @@ bigNumber operator/(const bigNumber& dividend, const bigNumber& divisor){
     }
 
     if(divisor.len == 1 && divisor.num[0] == 1){
+        if(divisor.sign){
+            return dividend * -1;
+        }
         return dividend;
     }
 
