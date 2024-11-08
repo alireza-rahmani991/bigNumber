@@ -33,6 +33,7 @@ public:
     bigNumber karatsubaMultiply(const bigNumber& number2);
     void splitAt(int m, bigNumber& low, bigNumber& high) const;
     static bigNumber factoriel(int n);
+    bigNumber pow(int n);
 
 };
 
@@ -419,11 +420,15 @@ bigNumber bigNumber::factoriel(int n){
 }
 
 
+bigNumber bigNumber::pow(int n){
+
+}
+
 int main(){
     bigNumber num(-990);
     bigNumber num2("0");
     bigNumber num3 = num.karatsubaMultiply(num2);
-    bigNumber num4 = bigNumber::factoriel(100);
+    // bigNumber num4 = bigNumber::factoriel(10);
     
-    cout<<num<<num2<<num3<<num4;
+    cout<<num<<num2<<num3;
 }
